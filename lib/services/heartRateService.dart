@@ -6,9 +6,10 @@ class HeartRateService {
 
   /// Pulls the latest heart rate reading from HealthKit (iOS).
   Future<int?> fetchLatestBPM() async {
-    final types = [HealthDataType.HEART_RATE];
+    final List<HealthDataType>types = [HealthDataType.HEART_RATE];
+    final Duration _queryWindow = Duration(minutes: 3);
     final now = DateTime.now();
-    final past = now.subtract(const Duration(minutes: 20));
+    final past = now.subtract(const Duration(minutes: 3));
 
     final authorized = await _health.requestAuthorization(types);
     if (!authorized) {
@@ -27,7 +28,7 @@ class HeartRateService {
   }
 
   /// Suggests a song/genre for the given heart rate.
-  String pickTrackFromBPM(int bpm) {
+  String pickTrackLabelFromBPM(int bpm) {
     if (bpm < 70) return 'Lo-fi Chill – unwind ✨';
     if (bpm < 90) return 'Indie Grooves – smooth flow 🌊';
     if (bpm < 110) return 'Dance Pop – move your vibe 🎶';
