@@ -1,7 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:health/health.dart';
+import 'dart:async';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:heartbeats/services/heartRateService.dart';
 
-void main() => runApp( MaterialApp( home: HeartRateStream()));
+void main() => runApp(const HeartbeatsApp());
+
+class HeartbeatsApp extends StatelessWidget{
+  const HeartbeatsApp({super.key});
+
+  @override
+  Widget build(BuildContext context){
+    return MaterialApp(
+      title: 'Heartbeats',
+      debugShowCheckedModeBanner: true,
+      theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
+      home: const HeartRateStream(),
+    );
+  }
+}
 
 class HeartRateStream extends StatefulWidget{
 
@@ -12,51 +28,87 @@ class HeartRateStream extends StatefulWidget{
 }
 
 class _HeartRateStreamState extends State<HeartRateStream>{
-  final HealthFactory _health = HealthFactory();
+  final HeartRateService _service = HeartRateService();
   int? _bpm;
-  bool _authorized = false;
-
-  Future<void> fetchBPM() async{
-    final types = [HealthDataType.HEART_RATE];
-    final now = DateTime.now();
-    final past = now.subtract(Duration(minutes: 2));
-
-    _authorized = await _health.requestAuthorization(types);
-
-    if(_authorized){
-      final data = await _health.getHealthDataFromTypes(past, now, types);
-      if(data.isNotEmpty){
-        final latest = data.last;
-        setState(() {
-          _bpm = (latest.value as NumericHealthValue).numericValue.round();});
-      }
-    } else{
-      print('X not authorized');
-    }
-  }
+  String _suggestedTrack = 'Waiting for the track..';
+  late final Timer _pollingTimer;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    fetchBPM();
-    Future.delayed(Duration.zero, () async{
-      while(mounted) {
-        await fetchBPM();
-        await Future.delayed(Duration(seconds: 10));
+    _pollingTimer = Timer.periodic(const Duration(seconds: 10), (_) async {
+      final bpm = await _service.fetchLatestBPM();
+      if (bpm != null) {
+        setState(() {
+          _bpm = bpm;
+          _suggestedTrack = _service.pickTrackFromBPM(bpm);
+        });
       }
     });
   }
 
   @override
+  void dispose() {
+    _pollingTimer.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context){
+    final bpmText = _bpm != null ? '$_bpm BPM' : 'waiting for BPM...';
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Live Heart Rate")),
+      appBar: AppBar(title: const Text('Live Heart Rate')),
       body: Center(
-        child: Text(
-          _bpm !=null ? 'BPM: $_bpm' : 'waiting for data....',
-          style: TextStyle(fontSize: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.favorite, color: Colors.red, size: 72)
+                .animate(onPlay: (controller) => controller.repeat())
+                .scaleXY(duration: 600.ms, begin: 1, end: 1.2)
+                .then()
+                .scaleXY(duration: 600.ms, begin: 1.2, end: 1),
+            const SizedBox(height: 30),
+            
+            Text(
+              bpmText,
+              style: TextStyle(
+                fontSize: 48,
+                fontWeight: FontWeight.bold,
+                color: Colors.teal.shade700,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            Text(
+              'Live from Apple watch',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600]),
+            ),
+
+              const SizedBox(height: 40),
+
+              const Divider(thickness: 1),
+
+              const SizedBox(height: 20),
+
+              Text(
+                'Suggested Track:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+
+              const SizedBox(height: 10),
+
+              Text(
+                _suggestedTrack,
+                style: const TextStyle(fontSize: 22, color: Colors.deepPurple),
+                textAlign: TextAlign.center,
+              ),
+          ],
         ),
-      )
+      ),
     );
   }
 }
