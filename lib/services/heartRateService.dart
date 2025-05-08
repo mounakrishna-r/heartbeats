@@ -7,7 +7,7 @@ class HeartRateService {
   /// Pulls the latest heart rate reading from HealthKit (iOS).
   Future<int?> fetchLatestBPM() async {
     final List<HealthDataType>types = [HealthDataType.HEART_RATE];
-    final Duration _queryWindow = Duration(minutes: 3);
+    final Duration queryWindow = Duration(minutes: 3);
     final now = DateTime.now();
     final past = now.subtract(const Duration(minutes: 3));
 
