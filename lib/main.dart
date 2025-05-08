@@ -106,6 +106,20 @@ class _HeartRateStreamState extends State<HeartRateStream>{
                 style: const TextStyle(fontSize: 22, color: Colors.deepPurple),
                 textAlign: TextAlign.center,
               ),
+
+            ElevatedButton.icon(
+                onPressed: _bpm !=null
+            ? () => _service.playSuggestedTrack(_bpm!)
+            : null,
+            icon: const Icon(Icons.play_arrow),
+            label: const Text('Play Track'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.teal,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              textStyle: const TextStyle(fontSize: 16),
+            ),
+            ),
           ],
         ),
       ),
