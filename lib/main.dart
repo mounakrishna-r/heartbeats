@@ -41,7 +41,7 @@ class _HeartRateStreamState extends State<HeartRateStream>{
       if (bpm != null) {
         setState(() {
           _bpm = bpm;
-          _suggestedTrack = _service.pickTrackFromBPM(bpm);
+          _suggestedTrack = _service.pickTrackLabelFromBPM(bpm);
         });
       }
     });
