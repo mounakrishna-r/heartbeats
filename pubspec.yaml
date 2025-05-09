@@ -28,12 +28,13 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  http: ^1.4.0
   flutter_animate: ^4.1.3
   flutter:
     sdk: flutter
   health: ^9.0.0 #apple health kit and google fit wrapper:
   flutter_riverpod: ^2.4.0
-  permission_handler: ^11.0.0
+  permission_handler: ^12.0.0+1
   flutter_localizations:
     sdk: flutter
 

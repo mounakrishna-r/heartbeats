@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:health/health.dart';
+import 'package:http/http.dart' as http;
 
 class HeartRateService {
   final HealthFactory _health = HealthFactory();
@@ -48,5 +50,34 @@ class HeartRateService {
     if (bpm < 110) return 'Dance Pop – move your vibe 🎶';
     if (bpm < 130) return 'EDM Pulse – let it lift 🔥';
     return 'Hard Beats – unleash beast mode ⚡️';
+  }
+
+  Future<String?> fetchSpotifyTrackName(int bpm) async {
+    final accessToken = "BQCk8wBCU327Ob_Im7zP9kB3PbJKzMxybtyOg0QFBiVA4cLLoBCe3MujnyVqcxHyBAWfiSZGtpov5dP0ni-WW405qEmEphR8zmUwigsDoES1CPg_0TSLWxwqPpBaxdlLqkdVgjUQWDI";
+
+    final uri = Uri.parse('https://api.spotify.com/v1/recommendations?limit=1&seed_genres=pop&target_tempo=$bpm');
+
+    print('➡️ Requesting from: ${uri.toString()}');
+
+    final response = await http.get(
+      uri,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    print('⬅️ Response: ${response.body}');
+
+    if(response.statusCode==200){
+      final data = jsonDecode(response.body);
+      final track = data['tracks'][0];
+      final trackName = track['name'];
+      final artistName = track['artists'][0]['name'];
+      return "$trackName by $artistName";
+    }
+    else{
+      print('Error fetching track: ${response.statusCode} and ${response.body}');
+      return null;
+    }
   }
 }

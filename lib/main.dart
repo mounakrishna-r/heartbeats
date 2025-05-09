@@ -39,9 +39,10 @@ class _HeartRateStreamState extends State<HeartRateStream>{
     _pollingTimer = Timer.periodic(const Duration(seconds: 10), (_) async {
       final bpm = await _service.fetchLatestBPM();
       if (bpm != null) {
+        final trackName = await _service.fetchSpotifyTrackName(bpm);
         setState(() {
           _bpm = bpm;
-          _suggestedTrack = _service.pickTrackLabelFromBPM(bpm);
+          _suggestedTrack = trackName ?? _service.pickTrackLabelFromBPM(bpm);
         });
       }
     });
@@ -69,7 +70,7 @@ class _HeartRateStreamState extends State<HeartRateStream>{
                 .then()
                 .scaleXY(duration: 600.ms, begin: 1.2, end: 1),
             const SizedBox(height: 30),
-            
+
             Text(
               bpmText,
               style: TextStyle(
